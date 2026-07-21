@@ -424,6 +424,7 @@
     padding:12px 20px; border-radius:999px; font-size:0.92rem;
   }
   @media (max-width:640px){ .sticky-cta{ display:flex; } body{ padding-bottom:140px; } }
+  .sticky-cta.hidden{ display:none !important; }
   .field input[type=file]{ width:100%; font-size:0.9rem; padding:10px 0; }
   .file-hint{ font-size:0.78rem; color:var(--muted); margin-top:6px; }
   .bukti-preview{ margin-top:12px; max-width:220px; max-height:220px; border-radius:10px; border:1.5px solid var(--line); display:block; }
@@ -887,6 +888,7 @@
   const form = document.getElementById('fbcForm');
   const reqNote = document.getElementById('reqNote');
   const successBox = document.getElementById('successBox');
+  const stickyCta = document.getElementById('stickyCta');
 
   form.addEventListener('submit', async function(e){
     e.preventDefault();
@@ -927,7 +929,20 @@
     // Tampilkan pesan sukses
     successBox.classList.add('show');
     successBox.scrollIntoView({behavior:'smooth', block:'start'});
+    if(stickyCta) stickyCta.classList.add('hidden');
   });
+
+  // Sembunyikan banner sticky saat peserta sedang mengisi form (biar tidak menutupi kolom isian)
+  if(stickyCta){
+    form.addEventListener('focusin', () => { stickyCta.classList.add('hidden'); });
+    form.addEventListener('focusout', () => {
+      setTimeout(() => {
+        if(!form.contains(document.activeElement) && !successBox.classList.contains('show')){
+          stickyCta.classList.remove('hidden');
+        }
+      }, 100);
+    });
+  }
 
   // ===== COUNTDOWN TIMER (early bird deadline: 25 Juli 2026, 23:59 WIB) =====
   const deadline = new Date('2026-07-25T23:59:59+07:00').getTime();
@@ -952,7 +967,7 @@
   tick(); setInterval(tick, 1000);
 </script>
 
-  <div class="sticky-cta">
+  <div class="sticky-cta" id="stickyCta">
     <div class="sc-price">Early bird<b>Rp350.000</b></div>
     <a href="#fbcForm">Amankan Slot →</a>
   </div>
