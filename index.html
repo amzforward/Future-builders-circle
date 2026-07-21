@@ -872,8 +872,7 @@
 
       <div class="success" id="successBox">
         <h3 class="display">Yes! Pendaftaranmu Berhasil 🎉</h3>
-        <p>Data kamu sudah kami terima. Kamu juga sedang diarahkan ke <strong>WhatsApp</strong> untuk konfirmasi lebih cepat — kalau jendela WhatsApp tidak otomatis terbuka, klik tombol di bawah ini.</p>
-        <a href="#" id="waLink" class="wa-btn" target="_blank">Konfirmasi via WhatsApp →</a>
+        <p>Data kamu sudah kami terima. Tim kami akan segera menghubungimu melalui <strong>WhatsApp</strong> untuk konfirmasi slot dan langkah selanjutnya. Pastikan nomor WhatsApp yang kamu isi aktif ya!</p>
       </div>
 
     </form>
@@ -882,15 +881,14 @@
   <footer>SEDIKIT ORANG &nbsp;·&nbsp; TUJUAN BESAR &nbsp;·&nbsp; MASA DEPAN KITA</footer>
 
 <script>
-  // Nomor WhatsApp penyelenggara (format internasional tanpa +/spasi)
-  const WA_NUMBER = "6287874338166";
+  // ===== GANTI URL DI BAWAH INI dengan URL Web App Google Apps Script Anda =====
+  const SHEET_ENDPOINT = "https://script.google.com/macros/s/AKfycbxOJS7k-kLcVjzAr4hDvMVQaWDInSG1k7EsWqUpkaFDPBYfRkpe8R4tkwX3rCREh1hI/exec";
 
   const form = document.getElementById('fbcForm');
   const reqNote = document.getElementById('reqNote');
   const successBox = document.getElementById('successBox');
-  const waLink = document.getElementById('waLink');
 
-  form.addEventListener('submit', function(e){
+  form.addEventListener('submit', async function(e){
     e.preventDefault();
     if(!form.checkValidity()){
       form.reportValidity();
@@ -900,40 +898,35 @@
     reqNote.classList.remove('show');
 
     const val = id => document.getElementById(id).value.trim();
-
-    // Susun pesan WhatsApp
-    const message =
-`FB CIRCLE - ${val('nama')}
-
-*Data Diri*
-Nama: ${val('nama')}
-Usia: ${val('usia')}
-Pekerjaan: ${val('pekerjaan')}
-Domisili: ${val('domisili')}
-WhatsApp: ${val('wa')}
-IG/LinkedIn: ${val('sosmed') || '-'}
-Diajak oleh: ${val('referral')}
-
-*1. Tentang diri*
-${val('q1')}
-
-*2. Alasan ikut FBC*
-${val('q2')}
-
-*3. Harapan ke depan*
-${val('q3')}
-
-Halo, saya sudah mendaftar Future Builders Circle. Mohon info langkah selanjutnya ya 🙏`;
-    const waUrl = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(message)}`;
-    waLink.href = waUrl;
+    const data = {
+      nama: val('nama'), usia: val('usia'), pekerjaan: val('pekerjaan'),
+      domisili: val('domisili'), wa: val('wa'), sosmed: val('sosmed') || '-',
+      referral: val('referral'),
+      q1: val('q1'), q2: val('q2'), q3: val('q3'),
+      submittedAt: new Date().toLocaleString('id-ID')
+    };
 
     const submitBtn = form.querySelector('.submit-btn');
     submitBtn.disabled = true;
+    submitBtn.textContent = 'Mengirim…';
 
-    // Tampilkan sukses + buka WhatsApp
+    try{
+      if(!SHEET_ENDPOINT.startsWith('PASTE_URL')){
+        await fetch(SHEET_ENDPOINT, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(data)
+        });
+      }
+    }catch(err){
+      console.error('Gagal mengirim ke Google Sheets:', err);
+      // Tetap tampilkan sukses ke peserta; data bisa ditindaklanjuti manual jika perlu
+    }
+
+    // Tampilkan pesan sukses
     successBox.classList.add('show');
     successBox.scrollIntoView({behavior:'smooth', block:'start'});
-    window.open(waUrl, '_blank');
   });
 
   // ===== COUNTDOWN TIMER (early bird deadline: 25 Juli 2026, 23:59 WIB) =====
